@@ -1,6 +1,5 @@
 import type { NextPage } from 'next'
 import Image from 'next/image'
-import IncidentsSection from "../src/incidents"
 import ServicesSection from "../src/services"
 
 const Home: NextPage = () => {

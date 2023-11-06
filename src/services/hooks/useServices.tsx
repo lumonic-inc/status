@@ -52,7 +52,6 @@ async function logs(key: string): Promise<LogDaySummary[]> {
     const lines = text.split("\n");
     const logs: Log[] = [];
     const logDaySummary: LogDaySummary[] = [];
-
     lines.forEach((line: string) => {
         const [created_at, status, response_time] = line.split(", ");
         logs.push({ id: created_at, response_time, status, created_at })
@@ -100,22 +99,34 @@ async function logs(key: string): Promise<LogDaySummary[]> {
 }
 
 function fillData(data: LogDaySummary[]): LogDaySummary[] {
-    const logDaySummary: LogDaySummary[] = [];
+    const logDaySummary = [];
     var today = new Date();
-
     for (var i = -1; i < 89; i += 1) {
+        // Create a new date for the ith day
         const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i);
-        const summary = data.find((item) => item.date === d.toISOString().substr(0, 10));
+        d.setHours(0, 0, 0, 0);  // Reset hours, minutes, seconds, and milliseconds
+
+        // Check if the date d is greater than today
+        if (d > today) {
+            continue; // Skip this loop iteration
+        }
+
+        // Format the date as YYYY-MM-DD without converting to UTC
+        const localDateISOString = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+        // Find the corresponding summary for the given date
+        const summary = data.find((item) => item.date === localDateISOString);
+        // Push a new object with either the found summary or default values
         logDaySummary.push({
             avg_response_time: summary?.avg_response_time || 0,
             current_status: summary?.current_status || "unknown",
-            date: d.toISOString().substr(0, 10),
+            date: localDateISOString,
             status: summary?.status || "unknown"
-        })
+        });
     }
 
+    // Since the dates were pushed starting from yesterday going back, we reverse the array to start from the farthest date
     return logDaySummary.reverse();
 }
-
 
 export default useServices;
